@@ -19,9 +19,21 @@ let card = Flashcard(
     prompt: try FlashcardContent(text: "der Hund"),
     answer: try FlashcardContent(text: "dog")
 )
+
+var session = try ThreeChoiceSession(
+    cards: cards,
+    configuration: ThreeChoiceSessionConfiguration(seed: 42, roundCount: 5)
+)
+
+if let round = session.currentRound {
+    let evaluation = try session.submit(
+        .selection(choiceID: round.choices[0].id),
+        forRoundID: round.id
+    )
+}
 ```
 
-Presentation, timers, persistence frameworks, image resolution, vocabulary acquisition, and spaced repetition remain outside the package boundary.
+The session plan is reproducible for identical cards, configuration, and seed. Each round exposes one correct answer and two distinct distractors; a host can submit a selected choice or explicit expiry. Presentation, timers, persistence frameworks, image resolution, vocabulary acquisition, and spaced repetition remain outside the package boundary.
 
 ## Documentation
 
