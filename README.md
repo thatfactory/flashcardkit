@@ -35,6 +35,14 @@ if let round = session.currentRound {
 
 The session plan is reproducible for identical cards, configuration, and seed. Each round exposes one correct answer and two distinct distractors; a host can submit a selected choice or explicit expiry. Presentation, timers, persistence frameworks, image resolution, vocabulary acquisition, and spaced repetition remain outside the package boundary.
 
+## Installation
+
+Add FlashcardKit to a Swift package and depend on the `FlashcardKit` product:
+
+```swift
+.package(url: "https://github.com/thatfactory/flashcardkit", from: "0.1.0")
+```
+
 ## Documentation
 
 API documentation is published with DocC after a GitHub release. See the [FlashcardKit documentation](https://thatfactory.github.io/flashcardkit/documentation/flashcardkit/).
