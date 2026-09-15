@@ -11,9 +11,17 @@
 
 # FlashcardKit
 
-FlashcardKit is a reusable, UI-agnostic domain package for deterministic prompt-and-answer recall activities, including seeded session ordering, multiple-choice construction, evaluation, and progress.
+FlashcardKit is a reusable, UI-agnostic domain package for prompt-and-answer recall activities. Its persistence-friendly card values support text and opaque host-owned asset references without taking ownership of presentation or media resolution.
 
-The package is currently a bootstrapped foundation. Presentation, timers, persistence, image resolution, vocabulary acquisition, and spaced repetition remain outside its boundary.
+```swift
+let card = Flashcard(
+    id: UUID(),
+    prompt: try FlashcardContent(text: "der Hund"),
+    answer: try FlashcardContent(text: "dog")
+)
+```
+
+Presentation, timers, persistence frameworks, image resolution, vocabulary acquisition, and spaced repetition remain outside the package boundary.
 
 ## Documentation
 
