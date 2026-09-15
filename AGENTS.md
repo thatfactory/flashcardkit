@@ -117,5 +117,6 @@ Replace these examples with exact repository paths:
 
 ## Local specialization
 
+- FlashcardKit's canonical logging emoji is 🃏. Package-owned session logs use subsystem `com.thatfactory.flashcardkit` and never include prompts, answers, asset references, or card identifiers.
 - Do not depend on LexiconKit; consumers map between the two domains.
 - Keep session mechanics deterministic for identical cards, configuration, and seed.
