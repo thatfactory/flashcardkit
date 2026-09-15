@@ -270,6 +270,7 @@ func validateReadmeContract(_ errors: inout [String]) {
         "--require-swift-format": "explicit Swift-format adoption validation",
         "documentation-maintenance contract": "documentation contract synchronization",
         "external-dependency contract": "external dependency contract synchronization",
+        "runtime-observability contract": "runtime observability contract synchronization",
     ]
     for (value, description) in required where !contents.contains(value) {
         errors.append("README.md: missing \(description): '\(value)'")
@@ -579,11 +580,21 @@ func validateExternalDependencyPolicy(_ errors: inout [String]) {
     if let contents = readText(cicdGuideline, errors: &errors) {
         let required = [
             "## Tooling and automation": "CI/CD tooling policy section",
+            "## Private repository dependencies": "private repository dependency authentication section",
             "Fastlane is forbidden": "forbidden delivery tooling",
             "xcode-cloud-mcp": "first-party Xcode Cloud tooling",
             "app-store-connect-mcp": "first-party App Store tooling",
             "required behavior cannot be implemented": "non-Swift capability-gap threshold",
             "missing Swift capability": "documented non-Swift exception",
+            "actions/create-github-app-token@v3": "short-lived GitHub App token workflow",
+            "client-id:": "current GitHub App client identifier input",
+            "permission-contents: read": "read-only private dependency permission",
+            "GIT_CONFIG_KEY_0": "process-level Git authentication",
+            "GIT_CONFIG_VALUE_0: https://github.com/": "GitHub HTTPS rewrite source",
+            "complete subprocess tree as privileged": "credential-bearing subprocess trust boundary",
+            "isolated disposable or ephemeral self-hosted runner": "untrusted-code runner isolation",
+            "This trust rule is event-independent": "event-independent credential boundary",
+            "pull_request_target": "untrusted pull-request credential boundary",
         ]
         for (value, description) in required where !contents.contains(value) {
             errors.append("Guidelines/CICD.md: missing \(description): '\(value)'")
@@ -594,6 +605,10 @@ func validateExternalDependencyPolicy(_ errors: inout [String]) {
             "[external dependency policy](Development.md#external-dependencies)": "package dependency policy pointer",
             "must not introduce or conceal a third-party runtime dependency": "first-party package boundary",
             "guideline-mandated tooling dependency": "DocC tooling exception",
+            "root `LICENSE` file": "root license-file retention",
+            "Retain the README license badge": "README license-badge retention",
+            "do not add a dedicated License heading or license-description section":
+                "README license-section prohibition",
         ]
         for (value, description) in required where !contents.contains(value) {
             errors.append("Guidelines/Packages.md: missing \(description): '\(value)'")
@@ -620,6 +635,7 @@ func validateAuditSkill(_ errors: inout [String]) {
         "lint-strict": "strict Swift-format CI audit",
         "AppLogger": "AppLogger integration audit",
         "Logging.md": "shared Logging guide reference",
+        "Dependency declaration and target linkage alone": "lifecycle observability coverage audit",
         "## Audit documentation consistency": "documentation drift audit",
         "Known stale documentation blocks completion": "stale documentation stopping rule",
         "## Audit documentation formatting": "documentation formatting audit",
@@ -674,6 +690,7 @@ func validateAuditSkill(_ errors: inout [String]) {
             "AgentGuidelines/Guidelines/Development.md": "Development.md pointer",
             "BEGIN THATFACTORY DOCUMENTATION MAINTENANCE CONTRACT v1": "documentation-maintenance contract",
             "BEGIN THATFACTORY EXTERNAL DEPENDENCY CONTRACT v1": "external-dependency contract",
+            "BEGIN THATFACTORY RUNTIME OBSERVABILITY CONTRACT v1": "runtime-observability contract",
             "AgentGuidelines/Guidelines/Documentation.md": "Documentation.md pointer",
             "## Stack": "Stack section",
         ]
