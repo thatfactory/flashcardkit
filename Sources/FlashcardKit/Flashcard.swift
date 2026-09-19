@@ -1,4 +1,4 @@
-import Foundation
+public import Foundation
 
 /// Host-authored prompt-and-answer content used by recall activities.
 public struct Flashcard: Identifiable, Codable, Sendable, Hashable {

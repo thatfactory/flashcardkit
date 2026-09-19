@@ -1,4 +1,4 @@
-import Foundation
+public import Foundation
 
 /// Controls how prompt cards are ordered when a session plan is created.
 public enum ThreeChoiceRoundOrdering: Codable, Sendable, Hashable {
