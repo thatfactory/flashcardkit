@@ -101,7 +101,7 @@ The session plan is reproducible for identical cards, configuration, and seed. E
 Add FlashcardKit to a Swift package and depend on the `FlashcardKit` product:
 
 ```swift
-.package(url: "https://github.com/thatfactory/flashcardkit", from: "0.1.1")
+.package(url: "https://github.com/thatfactory/flashcardkit", from: "0.2.0")
 ```
 
 ## Documentation
