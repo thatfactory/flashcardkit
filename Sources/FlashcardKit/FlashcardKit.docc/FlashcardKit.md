@@ -60,6 +60,29 @@ The session canonicalizes cards by identity before seeded selection, begins each
 
 ``ThreeChoiceSession`` remains a separate finite stage-zero engine. Progressive sessions consume only host-decided correct, incorrect, or expired outcomes; they do not construct choices, evaluate pronunciation, own timers, or assign scores.
 
+Use ``ThreeChoiceRoundPlan`` to construct and evaluate one deterministic three-choice interaction from an explicit candidate pool:
+
+```swift
+let plan = try ThreeChoiceRoundPlan(
+    id: 7,
+    cardID: card.id,
+    prompt: stage.prompt,
+    correctAnswer: stage.answer,
+    candidates: candidateAnswers,
+    seed: 42
+)
+
+let round = plan.round
+let evaluation = try plan.evaluate(
+    .selection(choiceID: round.choices[0].id),
+    forRoundID: round.id
+)
+```
+
+The candidate pool may omit the authoritative correct answer or contain it exactly once. FlashcardKit contributes that answer exactly once to the visible round. Repeated correct-answer candidates and duplicate non-correct candidates produce ``ThreeChoiceRoundError`` instead of being silently collapsed. Candidate order and the supplied seed determine the visible choice order; the round identity is copied to emitted values without changing randomness.
+
+These APIs stay deliberately separate: ``ThreeChoiceRoundPlan`` constructs and evaluates one response-mode-specific round, ``ThreeChoiceSession`` retains its existing finite stage-zero behavior, and ``ProgressiveFlashcardSession`` owns response-mode-agnostic stage progression. A consumer may compose an attempt with a round mechanism, but FlashcardKit does not couple the two engines automatically.
+
 The package does not resolve asset references or own presentation, persistence frameworks, vocabulary acquisition, or scheduling policy.
 
 Use ``ThreeChoiceSession`` to create a finite seeded plan with one correct answer and two distinct distractors per round. The host owns any timer and submits either ``ThreeChoiceResponse/selection(choiceID:)`` or ``ThreeChoiceResponse/expired`` against the exact visible round identity.

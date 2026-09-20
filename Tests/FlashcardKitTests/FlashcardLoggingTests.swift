@@ -84,6 +84,36 @@ struct FlashcardLoggingTests {
             #expect(messages.allSatisfy { !$0.contains(forbiddenValue) })
         }
     }
+
+    @Test("Round-plan messages expose only stable result classes")
+    func roundPlanMessagePrivacy() {
+        let messages = [
+            FlashcardLogging.roundCreatedMessage(),
+            FlashcardLogging.roundRejectedMessage(reason: "duplicate-candidate"),
+            FlashcardLogging.roundEvaluationAcceptedMessage(outcome: .correct),
+            FlashcardLogging.roundEvaluationAcceptedMessage(outcome: .incorrect),
+            FlashcardLogging.roundEvaluationAcceptedMessage(outcome: .expired),
+            FlashcardLogging.roundEvaluationRejectedMessage(reason: "stale-round"),
+        ]
+
+        #expect(messages[0] == "round created | choices=3")
+        #expect(messages[1] == "round rejected | reason=duplicate-candidate")
+        #expect(messages[2] == "round evaluated | outcome=correct")
+        #expect(messages[3] == "round evaluated | outcome=incorrect")
+        #expect(messages[4] == "round evaluated | outcome=expired")
+        #expect(messages[5] == "round evaluation rejected | reason=stale-round")
+        for forbiddenValue in [
+            "prompt",
+            "answer",
+            "asset-reference",
+            "00000000-0000-0000-0000-000000000001",
+            "round-id=7",
+            "choice-id=2",
+            "seed=42",
+        ] {
+            #expect(messages.allSatisfy { !$0.contains(forbiddenValue) })
+        }
+    }
 }
 
 extension FlashcardLoggingTests {

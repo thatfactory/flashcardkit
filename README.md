@@ -73,6 +73,27 @@ if let attempt = progressiveSession.currentAttempt {
 
 Selection is canonicalized by card identity and then seeded-shuffled. Every selected card begins at stage zero. Correct outcomes promote or complete a card; incorrect and expired outcomes retain the current stage. Unfinished cards requeue at the tail, except that a sole unfinished card necessarily repeats immediately. Attempt IDs increase monotonically within the session, and `generatedAttempts` grows with retries and promotions rather than describing a fixed total. Three-choice construction and pronunciation evaluation remain outside the progression engine.
 
+Use `ThreeChoiceRoundPlan` to construct and evaluate one deterministic three-choice interaction from an explicit answer pool:
+
+```swift
+let plan = try ThreeChoiceRoundPlan(
+    id: 7,
+    cardID: card.id,
+    prompt: stage.prompt,
+    correctAnswer: stage.answer,
+    candidates: candidateAnswers,
+    seed: 42
+)
+
+let round = plan.round
+let evaluation = try plan.evaluate(
+    .selection(choiceID: round.choices[0].id),
+    forRoundID: round.id
+)
+```
+
+The candidate pool may omit the authoritative correct answer or contain it exactly once; FlashcardKit contributes that answer exactly once to the visible round. Repeated correct-answer candidates and duplicate non-correct candidates are rejected rather than silently deduplicated. The ordered pool and seed determine choice ordering, while round identity is copied through without affecting randomness. Consumers can compose a progressive attempt with this round mechanism, but FlashcardKit does not automatically couple progression to three-choice evaluation.
+
 The session plan is reproducible for identical cards, configuration, and seed. Each round exposes one correct answer and two distinct distractors; a host can submit a selected choice or explicit expiry. Presentation, timers, persistence frameworks, image resolution, vocabulary acquisition, and spaced repetition remain outside the package boundary.
 
 ## Installation
