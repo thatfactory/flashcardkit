@@ -2,12 +2,7 @@ import Foundation
 
 /// A deterministic finite recall session with exactly three answers per round.
 public struct ThreeChoiceSession: Sendable {
-    private struct PlannedRound: Sendable {
-        let correctChoiceID: Int
-        let round: ThreeChoiceRound
-    }
-
-    private let plan: [PlannedRound]
+    private let plan: [ThreeChoiceRoundPlan]
     private var currentIndex = 0
 
     /// The round awaiting a response, or `nil` after completion.
@@ -79,38 +74,23 @@ public struct ThreeChoiceSession: Sendable {
             FlashcardLogging.responseRejected(reason: "session-complete")
             throw ThreeChoiceSessionError.sessionComplete
         }
-        guard plannedRound.round.id == roundID else {
-            FlashcardLogging.responseRejected(reason: "stale-round")
-            throw ThreeChoiceSessionError.staleRound(
-                expected: plannedRound.round.id,
-                received: roundID
+        let evaluation: ThreeChoiceEvaluation
+        do {
+            evaluation = try plannedRound.evaluateWithoutLogging(
+                response,
+                forRoundID: roundID
             )
-        }
-
-        let selectedChoiceID: Int?
-        let outcome: ThreeChoiceEvaluation.Outcome
-        switch response {
-        case .selection(let choiceID):
-            guard plannedRound.round.choices.contains(where: { $0.id == choiceID }) else {
-                FlashcardLogging.responseRejected(reason: "invalid-choice")
-                throw ThreeChoiceSessionError.invalidChoice(choiceID)
-            }
-            selectedChoiceID = choiceID
-            outcome = choiceID == plannedRound.correctChoiceID ? .correct : .incorrect
-        case .expired:
-            selectedChoiceID = nil
-            outcome = .expired
+        } catch ThreeChoiceRoundPlan.EvaluationError.staleRound(let expected, let received) {
+            FlashcardLogging.responseRejected(reason: "stale-round")
+            throw ThreeChoiceSessionError.staleRound(expected: expected, received: received)
+        } catch ThreeChoiceRoundPlan.EvaluationError.invalidChoice(let choiceID) {
+            FlashcardLogging.responseRejected(reason: "invalid-choice")
+            throw ThreeChoiceSessionError.invalidChoice(choiceID)
         }
 
         currentIndex += 1
-        let evaluation = ThreeChoiceEvaluation(
-            roundID: roundID,
-            outcome: outcome,
-            selectedChoiceID: selectedChoiceID,
-            correctChoiceID: plannedRound.correctChoiceID
-        )
         FlashcardLogging.responseAccepted(
-            outcome: outcome,
+            outcome: evaluation.outcome,
             completed: currentIndex,
             total: plan.count
         )
@@ -148,27 +128,20 @@ public struct ThreeChoiceSession: Sendable {
         promptCards: [Flashcard],
         allCards: [Flashcard],
         random: inout DeterministicRandom
-    ) -> [PlannedRound] {
+    ) -> [ThreeChoiceRoundPlan] {
         promptCards.enumerated().map { roundID, card in
             var seenAnswers = Set([card.answer])
-            var distractors = allCards.compactMap { candidate -> FlashcardContent? in
+            let distractors = allCards.compactMap { candidate -> FlashcardContent? in
                 guard seenAnswers.insert(candidate.answer).inserted else { return nil }
                 return candidate.answer
             }
-            random.shuffle(&distractors)
-
-            var answers = [card.answer] + distractors.prefix(2)
-            random.shuffle(&answers)
-            let correctChoiceID = answers.firstIndex(of: card.answer)!
-            let choices = answers.enumerated().map { ThreeChoice(id: $0, content: $1) }
-            return PlannedRound(
-                correctChoiceID: correctChoiceID,
-                round: ThreeChoiceRound(
-                    id: roundID,
-                    cardID: card.id,
-                    prompt: card.prompt,
-                    choices: choices
-                )
+            return ThreeChoiceRoundPlan(
+                id: roundID,
+                cardID: card.id,
+                prompt: card.prompt,
+                correctAnswer: card.answer,
+                validatedDistractors: distractors,
+                random: &random
             )
         }
     }

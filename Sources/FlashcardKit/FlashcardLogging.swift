@@ -20,6 +20,38 @@ enum FlashcardLogging {
         log(level: .error, "response rejected | reason=\(reason)")
     }
 
+    static func roundCreated() {
+        log(roundCreatedMessage())
+    }
+
+    static func roundRejected(reason: String) {
+        log(level: .error, roundRejectedMessage(reason: reason))
+    }
+
+    static func roundEvaluationAccepted(outcome: ThreeChoiceEvaluation.Outcome) {
+        log(roundEvaluationAcceptedMessage(outcome: outcome))
+    }
+
+    static func roundEvaluationRejected(reason: String) {
+        log(level: .error, roundEvaluationRejectedMessage(reason: reason))
+    }
+
+    static func roundCreatedMessage() -> String {
+        "round created | choices=3"
+    }
+
+    static func roundRejectedMessage(reason: String) -> String {
+        "round rejected | reason=\(reason)"
+    }
+
+    static func roundEvaluationAcceptedMessage(outcome: ThreeChoiceEvaluation.Outcome) -> String {
+        "round evaluated | outcome=\(outcome.token)"
+    }
+
+    static func roundEvaluationRejectedMessage(reason: String) -> String {
+        "round evaluation rejected | reason=\(reason)"
+    }
+
     static func progressiveSessionCreated(cards: Int) {
         log(progressiveSessionCreatedMessage(cards: cards))
     }
