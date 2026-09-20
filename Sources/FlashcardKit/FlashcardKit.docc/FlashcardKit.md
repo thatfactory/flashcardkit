@@ -4,7 +4,7 @@ Build deterministic, UI-agnostic recall activities from host-owned prompt-and-an
 
 ## Overview
 
-Use ``Flashcard`` to give recall activities stable host-owned identity, prompt content, and answer content. ``FlashcardContent`` can carry text, an opaque host-owned asset reference, or both, while preserving a nonempty representation invariant across creation and decoding.
+Use ``Flashcard`` to give recall activities stable host-owned identity and one or more ordered ``FlashcardStage`` values. Each stage has a host-authored ``FlashcardStageID``, prompt content, and answer content. ``FlashcardContent`` can carry text, an opaque host-owned asset reference, or both, while preserving a nonempty representation invariant across creation and decoding.
 
 ```swift
 let card = Flashcard(
@@ -13,6 +13,28 @@ let card = Flashcard(
     answer: try FlashcardContent(text: "dog")
 )
 ```
+
+The simple initializer constructs one stage with ``FlashcardStageID/primary``. Stage-aware hosts can create a card from a nonempty sequence whose identifiers are unique within that card:
+
+```swift
+let stagedCard = try Flashcard(
+    id: UUID(),
+    stages: [
+        FlashcardStage(
+            id: FlashcardStageID(rawValue: "definition"),
+            prompt: try FlashcardContent(text: "das Haus"),
+            answer: try FlashcardContent(text: "house")
+        ),
+        FlashcardStage(
+            id: FlashcardStageID(rawValue: "article"),
+            prompt: try FlashcardContent(text: "Haus"),
+            answer: try FlashcardContent(text: "das")
+        ),
+    ]
+)
+```
+
+Stage order is significant and preserved by `Codable`. ``FlashcardError`` reports missing stages and duplicate stage identifiers. Current ``ThreeChoiceSession`` behavior remains one-stage-compatible by reading each card's first stage; stage progression is intentionally separate from the card value model.
 
 The package does not resolve asset references or own presentation, persistence frameworks, vocabulary acquisition, or scheduling policy.
 
