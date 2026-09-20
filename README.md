@@ -11,13 +11,29 @@
 
 # FlashcardKit
 
-FlashcardKit is a reusable, UI-agnostic domain package for prompt-and-answer recall activities. Its persistence-friendly card values support text and opaque host-owned asset references without taking ownership of presentation or media resolution.
+FlashcardKit is a reusable, UI-agnostic domain package for prompt-and-answer recall activities. Its persistence-friendly card values support one or more ordered recall stages containing text and opaque host-owned asset references without taking ownership of presentation or media resolution.
 
 ```swift
 let card = Flashcard(
     id: UUID(),
     prompt: try FlashcardContent(text: "der Hund"),
     answer: try FlashcardContent(text: "dog")
+)
+
+let stagedCard = try Flashcard(
+    id: UUID(),
+    stages: [
+        FlashcardStage(
+            id: FlashcardStageID(rawValue: "definition"),
+            prompt: try FlashcardContent(text: "das Haus"),
+            answer: try FlashcardContent(text: "house")
+        ),
+        FlashcardStage(
+            id: FlashcardStageID(rawValue: "article"),
+            prompt: try FlashcardContent(text: "Haus"),
+            answer: try FlashcardContent(text: "das")
+        ),
+    ]
 )
 
 var session = try ThreeChoiceSession(
@@ -32,6 +48,8 @@ if let round = session.currentRound {
     )
 }
 ```
+
+The simple initializer remains the shortest path for one-stage cards. Stage-aware hosts can provide a nonempty ordered sequence with stable, unique stage identifiers. The current `ThreeChoiceSession` continues to use each card's first stage; progressive stage scheduling is a separate API step.
 
 The session plan is reproducible for identical cards, configuration, and seed. Each round exposes one correct answer and two distinct distractors; a host can submit a selected choice or explicit expiry. Presentation, timers, persistence frameworks, image resolution, vocabulary acquisition, and spaced repetition remain outside the package boundary.
 
