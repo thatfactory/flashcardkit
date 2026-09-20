@@ -49,7 +49,29 @@ if let round = session.currentRound {
 }
 ```
 
-The simple initializer remains the shortest path for one-stage cards. Stage-aware hosts can provide a nonempty ordered sequence with stable, unique stage identifiers. The current `ThreeChoiceSession` continues to use each card's first stage; progressive stage scheduling is a separate API step.
+The simple initializer remains the shortest path for one-stage cards. Stage-aware hosts can provide a nonempty ordered sequence with stable, unique stage identifiers. The current `ThreeChoiceSession` continues to use each card's first stage.
+
+Use `ProgressiveFlashcardSession` when a selected card must advance through every ordered stage independently of how the host evaluates it:
+
+```swift
+var progressiveSession = try ProgressiveFlashcardSession(
+    cards: cards,
+    configuration: ProgressiveFlashcardSessionConfiguration(
+        seed: 42,
+        cardCount: 5
+    )
+)
+
+if let attempt = progressiveSession.currentAttempt {
+    // The host decides how this stage is evaluated.
+    let evaluation = try progressiveSession.submit(
+        .correct,
+        forAttemptID: attempt.id
+    )
+}
+```
+
+Selection is canonicalized by card identity and then seeded-shuffled. Every selected card begins at stage zero. Correct outcomes promote or complete a card; incorrect and expired outcomes retain the current stage. Unfinished cards requeue at the tail, except that a sole unfinished card necessarily repeats immediately. Attempt IDs increase monotonically within the session, and `generatedAttempts` grows with retries and promotions rather than describing a fixed total. Three-choice construction and pronunciation evaluation remain outside the progression engine.
 
 The session plan is reproducible for identical cards, configuration, and seed. Each round exposes one correct answer and two distinct distractors; a host can submit a selected choice or explicit expiry. Presentation, timers, persistence frameworks, image resolution, vocabulary acquisition, and spaced repetition remain outside the package boundary.
 

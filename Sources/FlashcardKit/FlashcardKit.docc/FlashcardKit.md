@@ -34,7 +34,31 @@ let stagedCard = try Flashcard(
 )
 ```
 
-Stage order is significant and preserved by `Codable`. ``FlashcardError`` reports missing stages and duplicate stage identifiers. Current ``ThreeChoiceSession`` behavior remains one-stage-compatible by reading each card's first stage; stage progression is intentionally separate from the card value model.
+Stage order is significant and preserved by `Codable`. ``FlashcardError`` reports missing stages and duplicate stage identifiers. Current ``ThreeChoiceSession`` behavior remains one-stage-compatible by reading each card's first stage.
+
+Use ``ProgressiveFlashcardSession`` to select a deterministic subset of cards and advance each card through all of its ordered stages without coupling progression to the host's response mechanism:
+
+```swift
+var progressiveSession = try ProgressiveFlashcardSession(
+    cards: cards,
+    configuration: ProgressiveFlashcardSessionConfiguration(
+        seed: 42,
+        cardCount: 5
+    )
+)
+
+if let attempt = progressiveSession.currentAttempt {
+    // The host decides how this stage is evaluated.
+    let evaluation = try progressiveSession.submit(
+        .correct,
+        forAttemptID: attempt.id
+    )
+}
+```
+
+The session canonicalizes cards by identity before seeded selection, begins each selected card at stage zero, and gives every presentation opportunity a monotonic session-scoped attempt identity. Correct outcomes promote a card or complete its final stage; incorrect and expired outcomes retain the same stage. Every unfinished card is appended to the queue tail, so it reappears after other unfinished cards. A sole unfinished card necessarily repeats immediately. ``ProgressiveFlashcardProgress/generatedAttempts`` grows as retries and promotions issue new attempts and is not a fixed session total.
+
+``ThreeChoiceSession`` remains a separate finite stage-zero engine. Progressive sessions consume only host-decided correct, incorrect, or expired outcomes; they do not construct choices, evaluate pronunciation, own timers, or assign scores.
 
 The package does not resolve asset references or own presentation, persistence frameworks, vocabulary acquisition, or scheduling policy.
 
